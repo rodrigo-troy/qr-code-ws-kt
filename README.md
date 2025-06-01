@@ -7,9 +7,9 @@
 
 ## Introduction
 
-QR Code KT is a Spring Boot application written in Kotlin that provides a REST API for generating QR codes. The application allows users to generate QR codes by providing content through a simple API endpoint.
+QR Code KT is a Spring Boot application written in Kotlin that provides a REST API for generating QR codes. The application allows users to generate QR codes in various image formats (PNG, JPEG, GIF) by providing content through a simple API endpoint.
 
-This project serves as a demonstration of building RESTful web services using Spring Boot and Kotlin, with a focus on simplicity and maintainability.
+This project serves as a demonstration of building RESTful web services using Spring Boot and Kotlin, with a focus on simplicity and maintainability. It uses the ZXing library for QR code generation.
 
 ## Project Structure
 
@@ -63,39 +63,76 @@ The application will start on port 8080 by default.
 ## Features
 
 * **QR Code Generation API**: Generate QR codes by providing content through a REST API
+* **Multiple Image Formats**: Support for PNG, JPEG, and GIF output formats
+* **Customizable Size**: Generate QR codes with sizes between 150 and 350 pixels
 * **Spring Boot Framework**: Built on the robust Spring Boot framework for easy development and deployment
 * **Kotlin Language**: Written in Kotlin for concise, expressive, and safe code
 * **RESTful Architecture**: Follows REST principles for API design
 * **Comprehensive Test Suite**: Includes tests to ensure functionality works as expected
+* **Input Validation**: Built-in validation for request parameters with meaningful error messages
 
 ## Usage Examples
 
 ### Generating a QR Code
 
-To generate a QR code, send a GET request to the `/api/qrcode/generate` endpoint with the `content` parameter:
+To generate a QR code, send a GET request to the `/api/qrcode` endpoint with the required parameters:
+
+#### Parameters
+
+| Parameter | Type   | Required | Description                                    | Constraints           |
+|-----------|--------|----------|------------------------------------------------|-----------------------|
+| contents  | string | Yes      | The text or data to encode in the QR code     | Cannot be empty/blank |
+| size      | int    | Yes      | The size of the QR code image in pixels       | 150-350               |
+| type      | string | Yes      | The image format                               | png, jpeg, gif        |
+
+#### Example Request
 
 ```bash
-curl "http://localhost:8080/api/qrcode/generate?content=Hello%20World"
-```
+# Generate a PNG QR code
+curl "http://localhost:8080/api/qrcode?contents=Hello%20World&size=250&type=png" --output qrcode.png
 
-Example response:
+# Generate a JPEG QR code
+curl "http://localhost:8080/api/qrcode?contents=https://example.com&size=200&type=jpeg" --output qrcode.jpg
 
-```json
-{
-  "content": "Hello World",
-  "status": "QR code would be generated here"
-}
+# Generate a GIF QR code
+curl "http://localhost:8080/api/qrcode?contents=Contact%20Info&size=300&type=gif" --output qrcode.gif
 ```
 
 ### Using the API in a Web Application
 
 ```javascript
-fetch('http://localhost:8080/api/qrcode/generate?content=Hello%20World')
-  .then(response => response.json())
-  .then(data => {
-    console.log(data);
-    // Process the QR code data
+// Display QR code in an img element
+const imageUrl = 'http://localhost:8080/api/qrcode?contents=Hello%20World&size=250&type=png';
+document.getElementById('qrcode').src = imageUrl;
+
+// Or download the QR code
+fetch('http://localhost:8080/api/qrcode?contents=Hello%20World&size=250&type=png')
+  .then(response => response.blob())
+  .then(blob => {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'qrcode.png';
+    a.click();
   });
+```
+
+### Error Handling
+
+The API returns meaningful error messages for invalid requests:
+
+```bash
+# Missing contents
+curl "http://localhost:8080/api/qrcode?size=250&type=png"
+# Response: {"error": "Contents cannot be null or blank"}
+
+# Invalid size
+curl "http://localhost:8080/api/qrcode?contents=test&size=400&type=png"
+# Response: {"error": "Image size must be between 150 and 350 pixels"}
+
+# Invalid type
+curl "http://localhost:8080/api/qrcode?contents=test&size=250&type=bmp"
+# Response: {"error": "Only png, jpeg and gif image types are supported"}
 ```
 
 ## Configuration
@@ -145,13 +182,23 @@ The application can be deployed as a standalone JAR file:
 
 For production deployments, consider using containerization with Docker or deploying to a cloud platform like Heroku, AWS, or Google Cloud.
 
+## Dependencies
+
+The project uses the following key dependencies:
+
+* **Spring Boot Starter Web**: For building REST APIs
+* **ZXing Core & JavaSE**: For QR code generation functionality
+* **Jackson Module Kotlin**: For JSON serialization/deserialization
+* **Kotlin Reflect**: For Kotlin reflection support
+
 ## Security
 
-This project is a demonstration and does not include security features. For production use, consider implementing:
+This project is a demonstration and does not include advanced security features. For production use, consider implementing:
 
 * Authentication and authorization
 * HTTPS
-* Input validation
+* Additional input validation and sanitization
 * Rate limiting
+* CORS configuration
 
 If you discover a security vulnerability, please report it by creating an issue in the repository.
