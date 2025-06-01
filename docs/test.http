@@ -9,12 +9,13 @@ GET http://localhost:8080/api/health
 
 ### QR Code Generation
 GET http://localhost:8080/api/qrcode
+Accept: image/png
 
 > {%
     client.test("QR Code endpoint returns 200", function () {
         client.assert(response.status === 200, "Response status is not 200");
     });
-    
+
     client.test("Content-Type is image/png", function () {
         client.assert(response.headers.valueOf("Content-Type") === "image/png", "Content-Type is not image/png");
     });
