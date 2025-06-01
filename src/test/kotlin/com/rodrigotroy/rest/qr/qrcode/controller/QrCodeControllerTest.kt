@@ -15,6 +15,12 @@ class QrCodeControllerTest {
     private lateinit var mockMvc: MockMvc
 
     @Test
+    fun `should return 501 NOT IMPLEMENTED when root endpoint is called`() {
+        mockMvc.perform(get("/api/qrcode"))
+                .andExpect(status().isNotImplemented)
+    }
+
+    @Test
     fun `should return QR code information when generate endpoint is called`() {
         val testContent = "test-content"
 

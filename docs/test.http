@@ -1,0 +1,4 @@
+### Generate QR Code
+GET http://localhost:8080/api/qrcode/generate?data=Hello%20World
+
+###
