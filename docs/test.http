@@ -7,8 +7,8 @@ GET http://localhost:8080/api/health
     });
 %}
 
-### QR Code Generation
-GET http://localhost:8080/api/qrcode
+### QR Code Generation - Valid PNG Request
+GET http://localhost:8080/api/qrcode?size=250&type=png
 Accept: image/png
 
 > {%
@@ -18,6 +18,94 @@ Accept: image/png
 
     client.test("Content-Type is image/png", function () {
         client.assert(response.headers.valueOf("Content-Type") === "image/png", "Content-Type is not image/png");
+    });
+%}
+
+### QR Code Generation - Valid JPEG Request
+GET http://localhost:8080/api/qrcode?size=200&type=jpeg
+Accept: image/jpeg
+
+> {%
+    client.test("QR Code endpoint returns 200", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Content-Type is image/jpeg", function () {
+        client.assert(response.headers.valueOf("Content-Type") === "image/jpeg", "Content-Type is not image/jpeg");
+    });
+%}
+
+### QR Code Generation - Valid GIF Request
+GET http://localhost:8080/api/qrcode?size=300&type=gif
+Accept: image/gif
+
+> {%
+    client.test("QR Code endpoint returns 200", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Content-Type is image/gif", function () {
+        client.assert(response.headers.valueOf("Content-Type") === "image/gif", "Content-Type is not image/gif");
+    });
+%}
+
+### QR Code Generation - Invalid Size (Too Small)
+GET http://localhost:8080/api/qrcode?size=100&type=png
+Accept: application/json
+
+> {%
+    client.test("Invalid size returns 400", function () {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+
+    client.test("Error message is correct", function () {
+        const jsonResponse = JSON.parse(response.body);
+        client.assert(jsonResponse.error === "Image size must be between 150 and 350 pixels", "Error message is incorrect");
+    });
+%}
+
+### QR Code Generation - Invalid Size (Too Large)
+GET http://localhost:8080/api/qrcode?size=400&type=png
+Accept: application/json
+
+> {%
+    client.test("Invalid size returns 400", function () {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+
+    client.test("Error message is correct", function () {
+        const jsonResponse = JSON.parse(response.body);
+        client.assert(jsonResponse.error === "Image size must be between 150 and 350 pixels", "Error message is incorrect");
+    });
+%}
+
+### QR Code Generation - Invalid Type
+GET http://localhost:8080/api/qrcode?size=250&type=tiff
+Accept: application/json
+
+> {%
+    client.test("Invalid type returns 400", function () {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+
+    client.test("Error message is correct", function () {
+        const jsonResponse = JSON.parse(response.body);
+        client.assert(jsonResponse.error === "Only png, jpeg and gif image types are supported", "Error message is incorrect");
+    });
+%}
+
+### QR Code Generation - Both Parameters Invalid
+GET http://localhost:8080/api/qrcode?size=100&type=tiff
+Accept: application/json
+
+> {%
+    client.test("Invalid parameters return 400", function () {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+
+    client.test("Size error takes precedence", function () {
+        const jsonResponse = JSON.parse(response.body);
+        client.assert(jsonResponse.error === "Image size must be between 150 and 350 pixels", "Error message is incorrect");
     });
 %}
 
