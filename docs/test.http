@@ -154,4 +154,113 @@ Accept: application/json
     });
 %}
 
+### QR Code Generation - Default Parameters (Only Contents)
+GET http://localhost:8080/api/qrcode?contents=default%20test
+Accept: image/png
+
+> {%
+    client.test("Default parameters return 200", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+
+    client.test("Content-Type is image/png (default)", function () {
+        client.assert(response.headers.valueOf("Content-Type") === "image/png", "Content-Type is not image/png");
+    });
+%}
+
+### QR Code Generation - Valid Correction Level L
+GET http://localhost:8080/api/qrcode?contents=test&correction=L
+Accept: image/png
+
+> {%
+    client.test("Correction level L returns 200", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### QR Code Generation - Valid Correction Level M
+GET http://localhost:8080/api/qrcode?contents=test&correction=M
+Accept: image/png
+
+> {%
+    client.test("Correction level M returns 200", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### QR Code Generation - Valid Correction Level Q
+GET http://localhost:8080/api/qrcode?contents=test&correction=Q
+Accept: image/png
+
+> {%
+    client.test("Correction level Q returns 200", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### QR Code Generation - Valid Correction Level H
+GET http://localhost:8080/api/qrcode?contents=test&correction=H
+Accept: image/png
+
+> {%
+    client.test("Correction level H returns 200", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
+### QR Code Generation - Invalid Correction Level
+GET http://localhost:8080/api/qrcode?contents=test&correction=S
+Accept: application/json
+
+> {%
+    client.test("Invalid correction level returns 400", function () {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+
+    client.test("Error message is correct", function () {
+        const jsonResponse = JSON.parse(response.body);
+        client.assert(jsonResponse.error === "Permitted error correction levels are L, M, Q, H", "Error message is incorrect");
+    });
+%}
+
+### QR Code Generation - Invalid Contents and Correction (Contents Error Takes Precedence)
+GET http://localhost:8080/api/qrcode?contents=&correction=S
+Accept: application/json
+
+> {%
+    client.test("Invalid parameters return 400", function () {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+
+    client.test("Contents error takes precedence", function () {
+        const jsonResponse = JSON.parse(response.body);
+        client.assert(jsonResponse.error === "Contents cannot be null or blank", "Error message is incorrect");
+    });
+%}
+
+### QR Code Generation - Invalid Correction and Type (Correction Error Takes Precedence)
+GET http://localhost:8080/api/qrcode?contents=test&correction=S&type=tiff
+Accept: application/json
+
+> {%
+    client.test("Invalid parameters return 400", function () {
+        client.assert(response.status === 400, "Response status is not 400");
+    });
+
+    client.test("Correction error takes precedence over type error", function () {
+        const jsonResponse = JSON.parse(response.body);
+        client.assert(jsonResponse.error === "Permitted error correction levels are L, M, Q, H", "Error message is incorrect");
+    });
+%}
+
+### QR Code Generation - Case Insensitive Correction Level (lowercase)
+GET http://localhost:8080/api/qrcode?contents=test&correction=h
+Accept: image/png
+
+> {%
+    client.test("Lowercase correction level returns 200", function () {
+        client.assert(response.status === 200, "Response status is not 200");
+    });
+%}
+
 ###

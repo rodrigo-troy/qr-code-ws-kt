@@ -131,4 +131,69 @@ class QrCodeControllerTest {
                 .param("type", "png"))
                 .andExpect(status().isOk)
     }
+    
+    @Test
+    fun `should return 200 OK with default parameters when only contents is provided`() {
+        mockMvc.perform(get("/api/qrcode")
+                .param("contents", "abcdef"))
+                .andExpect(status().isOk)
+                .andExpect(content().contentType(MediaType.IMAGE_PNG))
+    }
+    
+    @Test
+    fun `should return 400 BAD REQUEST when correction level is invalid`() {
+        mockMvc.perform(get("/api/qrcode")
+                .param("contents", "test")
+                .param("correction", "S"))
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.error").value("Permitted error correction levels are L, M, Q, H"))
+    }
+    
+    @Test
+    fun `should return 200 OK when valid correction levels are provided`() {
+        // Test all valid correction levels
+        val validLevels = listOf("L", "M", "Q", "H")
+        
+        validLevels.forEach { level ->
+            mockMvc.perform(get("/api/qrcode")
+                    .param("contents", "test")
+                    .param("correction", level))
+                    .andExpect(status().isOk)
+                    .andExpect(content().contentType(MediaType.IMAGE_PNG))
+        }
+    }
+    
+    @Test
+    fun `should return contents error when contents and correction are invalid`() {
+        mockMvc.perform(get("/api/qrcode")
+                .param("contents", "")
+                .param("correction", "S"))
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.error").value("Contents cannot be null or blank"))
+    }
+    
+    @Test
+    fun `should return correction error when correction and type are invalid`() {
+        mockMvc.perform(get("/api/qrcode")
+                .param("contents", "test")
+                .param("correction", "S")
+                .param("type", "tiff"))
+                .andExpect(status().isBadRequest)
+                .andExpect(jsonPath("$.error").value("Permitted error correction levels are L, M, Q, H"))
+    }
+    
+    @Test
+    fun `should handle case insensitive correction levels`() {
+        // Test lowercase
+        mockMvc.perform(get("/api/qrcode")
+                .param("contents", "test")
+                .param("correction", "l"))
+                .andExpect(status().isOk)
+                
+        // Test mixed case
+        mockMvc.perform(get("/api/qrcode")
+                .param("contents", "test")
+                .param("correction", "h"))
+                .andExpect(status().isOk)
+    }
 }
